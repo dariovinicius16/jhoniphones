@@ -34,20 +34,15 @@
         <h2 class="text-4xl md:text-5xl font-extrabold text-white tracking-tight max-w-2xl mx-auto leading-tight">
             Escolha o seu novo <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-600">iPhone</span> com quem entende do assunto!
         </h2>
-        <p class="text-gray-400 text-sm md:text-base mt-4 max-w-md mx-auto">
-            Aparelhos 100% originais. Parcelamos em até 12x!
-        </p>
     </section>
 
     <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-10 space-y-16">
-        
         <section>
             <div class="flex items-center gap-3 mb-8 border-b border-gray-900 pb-3">
                 <div class="w-2 h-6 bg-amber-500 rounded-full"></div>
                 <h3 class="text-xl font-bold text-white">Linha Premium & Pro</h3>
             </div>
-            <div id="container-pro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                </div>
+            <div id="container-pro" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
         <section>
@@ -55,128 +50,73 @@
                 <div class="w-2 h-6 bg-gray-600 rounded-full"></div>
                 <h3 class="text-xl font-bold text-white">Linha Padrão & Base</h3>
             </div>
-            <div id="container-padrao" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                </div>
+            <div id="container-padrao" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
-
     </main>
 
-<footer class="bg-gray-950 border-t border-gray-900 py-6 text-center text-xs text-gray-500 mt-20">
-    <a href="login.html" class="text-gray-700 hover:text-amber-500/40 transition block mb-2 font-medium">Controle Interno</a>
-    <p class="font-semibold text-gray-400 mb-1">Jhon dos iPhones · Fortaleza/CE</p>
-    <p>&copy; 2026 Todos os direitos reservados.</p>
-</footer>
+    <footer class="bg-gray-950 border-t border-gray-900 py-6 text-center text-xs text-gray-500 mt-20">
+        <a href="login.html" class="text-gray-700 hover:text-amber-500/40 transition block mb-2 font-medium">Controle Interno</a>
+        <p class="font-semibold text-gray-400 mb-1">Jhon dos iPhones · Fortaleza/CE</p>
+        <p>&copy; 2026 Todos os direitos reservados.</p>
+    </footer>
 
     <script>
-        // 1. CONFIGURAÇÕES DO SEU SUPABASE
         const SUPABASE_URL = "https://tandvrjbckjfcfxbxnet.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhbmR2cmpiY2tqZmNmeGJ4bmV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3NTExMjgsImV4cCI6MjA5NzMyNzEyOH0.K2zhdps96oj-fRnrPmOO6lePNSO-fHEGpCFsSy53B48";
-        const WHATSAPP_NUMERO = "5585999287455"; // Número de Whatsapp
+        const WHATSAPP_NUMERO = "5585999287455";
 
-        // Inicializa o cliente do Supabase com o nome correto para evitar duplicação
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
         const containerPro = document.getElementById("container-pro");
         const containerPadrao = document.getElementById("container-padrao");
 
-        // FUNÇÃO PARA BUSCAR OS PRODUTOS DO BANCO
         async function renderizarVitrine() {
-            // Mensagem de carregamento inicial
-            const htmlCarregando = `<div class="col-span-full text-center py-10 text-gray-500 text-sm"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Carregando novidades...</div>`;
-            containerPro.innerHTML = htmlCarregando;
-            containerPadrao.innerHTML = htmlCarregando;
+            const { data: produtos } = await supabaseClient.from('produtos').select('*').order('preco', { ascending: true });
 
-            const { data: produtos, error } = await supabaseClient
-                .from('produtos')
-                .select('*')
-                .order('preco', { ascending: true }); // Ordena do mais barato para o mais caro
-
-            if (error) {
-                console.error("Erro ao carregar vitrine:", error);
-                const htmlErro = `<div class="col-span-full text-center py-10 text-red-500 text-sm">Erro ao carregar os produtos. Tente atualizar a página.</div>`;
-                containerPro.innerHTML = htmlErro;
-                containerPadrao.innerHTML = htmlErro;
-                return;
-            }
-
-            // Limpa os containers para injetar os dados reais
             containerPro.innerHTML = "";
             containerPadrao.innerHTML = "";
 
-            let qtdPro = 0;
-            let qtdPadrao = 0;
-
             produtos.forEach(prod => {
-                // Configuração das tags de status
-                let statusTag = "";
-                if (prod.status === "Últimas Unidades") {
-                    statusTag = `<span class="absolute top-3 right-3 bg-amber-500/90 backdrop-blur text-black text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider z-10">Últimas Unidades</span>`;
-                } else if (prod.status === "Esgotado") {
-                    statusTag = `<span class="absolute top-3 right-3 bg-red-600/90 backdrop-blur text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider z-10">Esgotado</span>`;
-                }
+                const statusTag = prod.status === "Esgotado" 
+                    ? `<span class="absolute top-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">Esgotado</span>` : "";
 
-                // Montagem do link personalizado do WhatsApp
-                const mensagemWhats = encodeURIComponent(`Olá Jhon! Vi o ${prod.nome} (${prod.capacidade} · ${prod.cor}) na vitrine por R$ ${Number(prod.preco).toLocaleString('pt-BR')} e gostaria de saber mais detalhes.`);
-                const linkWhats = `https://wa.me/${WHATSAPP_NUMERO}?text=${mensagemWhats}`;
+                const linkWhats = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(`Olá Jhon! Tenho interesse no ${prod.nome} (${prod.capacidade} - ${prod.cor})`)}`;
 
-                // Se não houver foto cadastrada, usa um ícone padrão elegante
                 const templateImagem = prod.imagem_url 
-                    ? `<img src="${prod.imagem_url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" alt="${prod.nome}">`
-                    : `<div class="w-full h-full bg-gray-900 flex flex-col items-center justify-center text-gray-700 gap-2"><i class="fa-solid fa-mobile-screen text-4xl"></i><span class="text-xs">Foto sob consulta</span></div>`;
+                    ? `<img src="${prod.imagem_url}" class="w-full h-full object-contain p-6 group-hover:scale-105 transition duration-500" alt="${prod.nome}">`
+                    : `<div class="w-full h-full bg-gray-900 flex items-center justify-center text-gray-700">Sem foto</div>`;
 
-                // Layout do Card do iPhone
                 const cardHtml = `
-                    <div class="bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden group flex flex-col justify-between relative hover:border-gray-800 transition duration-300">
+                    <div class="bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden group flex flex-col relative hover:border-gray-800 transition">
                         ${statusTag}
-                        
-                        <div class="h-64 bg-gray-900/50 relative overflow-hidden flex items-center justify-center border-b border-gray-900/30">
+                        <div class="h-64 bg-white flex items-center justify-center border-b border-gray-900/30">
                             ${templateImagem}
                         </div>
-
-                        <div class="p-5 flex-grow flex flex-col justify-between gap-4">
+                        <div class="p-5 flex flex-col gap-3">
                             <div>
                                 <h4 class="text-lg font-bold text-white group-hover:text-amber-500 transition duration-300">${prod.nome}</h4>
                                 <p class="text-xs text-gray-400 mt-1 flex items-center gap-1.5">
                                     <span class="bg-gray-900 px-2 py-0.5 rounded border border-gray-800">${prod.capacidade}</span>
                                     <span class="w-1 h-1 bg-gray-700 rounded-full"></span>
-                                    <span class="text-gray-300">${prod.cor}</span>
+                                    <span>${prod.cor}</span>
                                 </p>
                             </div>
-
                             <div>
-                                <span class="text-xs text-gray-500 block uppercase tracking-wider font-semibold">À vista</span>
-                                <div class="flex items-baseline gap-1">
-                                    <span class="text-xs font-bold text-amber-500">R$</span>
-                                    <span class="text-2xl font-black text-white">${Number(prod.preco).toLocaleString('pt-BR', {minimumFractionDigits: 0, maximumFractionDigits: 0})}</span>
-                                </div>
-                                <p class="text-[11px] text-gray-400 mt-0.5"><i class="fa-solid fa-credit-card text-gray-600"></i> Ou até 12x no cartão. </p>
+                                <span class="text-xs text-gray-500 uppercase font-semibold">À vista</span>
+                                <div class="text-2xl font-black text-white group-hover:text-amber-500 transition duration-300">R$ ${Number(prod.preco).toLocaleString('pt-BR')}</div>
+                                <p class="text-[11px] text-gray-400 mt-1"><i class="fa-solid fa-credit-card"></i> Ou até 12x no cartão.</p>
                             </div>
-
-                            <a href="${prod.status === 'Esgotado' ? '#' : linkWhats}" 
-                               target="${prod.status === 'Esgotado' ? '_self' : '_blank'}" 
-                               class="w-full ${prod.status === 'Esgotado' ? 'bg-gray-900 text-gray-600 cursor-not-allowed' : 'bg-white hover:bg-amber-500 hover:text-black text-black'} font-bold py-3 px-4 rounded-xl text-center text-xs transition duration-300 flex items-center justify-center gap-2">
-                                ${prod.status === 'Esgotado' ? '<i class="fa-solid fa-ban"></i> Aparelho Indisponível' : '<i class="fa-brands fa-whatsapp text-sm"></i> Tenho Interesse'}
+                            <a href="${prod.status === 'Esgotado' ? '#' : linkWhats}" target="_blank" 
+                               class="w-full ${prod.status === 'Esgotado' ? 'bg-gray-800 cursor-not-allowed' : 'bg-white hover:bg-amber-500'} text-black font-bold py-3 rounded-xl text-center text-xs transition flex items-center justify-center gap-2">
+                                <i class="fa-brands fa-whatsapp text-sm"></i> Tenho Interesse
                             </a>
                         </div>
                     </div>
                 `;
 
-                // Organiza dinamicamente nas seções corretas
-                if (prod.categoria === "Pro") {
-                    containerPro.innerHTML += cardHtml;
-                    qtdPro++;
-                } else {
-                    containerPadrao.innerHTML += cardHtml;
-                    qtdPadrao++;
-                }
+                if (prod.categoria === "Pro") containerPro.innerHTML += cardHtml;
+                else containerPadrao.innerHTML += cardHtml;
             });
-
-            // Se alguma das seções ficar vazia, mostra um aviso amigável
-            if (qtdPro === 0) containerPro.innerHTML = `<p class="col-span-full text-center py-6 text-xs text-gray-600">Nenhum modelo Pro cadastrado no momento.</p>`;
-            if (qtdPadrao === 0) containerPadrao.innerHTML = `<p class="col-span-full text-center py-6 text-xs text-gray-600">Nenhum modelo Padrão cadastrado no momento.</p>`;
         }
-
-        // Executa a busca ao carregar a página
         renderizarVitrine();
     </script>
 </body>
